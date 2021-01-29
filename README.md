@@ -1,5 +1,5 @@
 # pony-pi
-Raspberry Pi I/O support library
+Raspberry Pi I/O support library - Only Raspberry Pi3 is tested. Earlier Pi versions don't have ARMv8-a, so needs to be different. RPi4 probably works, but not tested.
 
 Pony Language doesn't support Raspberry Pi from the community directly,
 but it is possible to compile Pony Language compiler to cross-compile to
