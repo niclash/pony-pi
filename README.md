@@ -7,7 +7,7 @@ ARM and with files and information here, you can cross-compile your
 Pony applications for Raspberry Pi.
 
 ## Compile Pony Language compiler
-
+First check out the source code from GitHub, into a new directory for this.
 ```bash
 # Clone the Pony compiler
 git clone https://github.com/ponylang/ponyc ponyc-arm
@@ -51,4 +51,7 @@ export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwi
 cd <<YOURPROJECT>>
 corral run -- ponyc -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```
+
+## Different Compiler
+At the moment, the compiler will not work for `x86` compilation, so need to keep the regular compiler separate.
 
