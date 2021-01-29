@@ -56,6 +56,8 @@ cd <<YOURPROJECT>>
 corral add github.com/niclash/pony-pi.git
 ```
 
+Then you can compile normally, such as;
+
 ```bash
 corral run -- ponyc -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```
