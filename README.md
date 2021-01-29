@@ -48,7 +48,15 @@ provide the right target information to the compiler.
 
 ```bash
 export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwiringPi"
+```
+
+**NOTE: Your project needs to depend on this repository.**
+```bash
 cd <<YOURPROJECT>>
+corral add github.com/niclash/pony-pi.git
+```
+
+```bash
 corral run -- ponyc -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```
 
