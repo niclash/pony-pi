@@ -5,6 +5,15 @@ Pony Language doesn't support Raspberry Pi from the community directly,
 but it is possible to compile Pony Language compiler to cross-compile to
 ARM and with files and information here, you can cross-compile your
 Pony applications for Raspberry Pi.
+## Packages needed
+You need to have a bunch of packages installed on your host (Linux) system. I 
+am not totally sure exactly which packages, but the following are likely;
+
+```bash
+sudo apt install g++-10-arm-linux-gnueabihf
+sudo apt install gcc-10-arm-linux-gnueabi
+sudo apt install gcc-arm-linux-gnueabihf
+```
 
 ## Compile Pony Language compiler
 First check out the source code from GitHub, into a new directory for this.
@@ -34,15 +43,6 @@ ln -s /home/niclas/dev/pony/ponyc-arm/build/release/ponyc /home/niclas/bin
 ```
 
 ## How to compile your program
-You need to have a bunch of packages installed on your host (Linux) system. I 
-am not totally sure exactly which packages, but the following are likely;
-
-```bash
-sudo apt install g++-10-arm-linux-gnueabihf
-sudo apt install gcc-10-arm-linux-gnueabi
-sudo apt install gcc-arm-linux-gnueabihf
-```
-
 Then to compile, you need to set up the `$CC` environment variable, and 
 provide the right target information to the compiler.
 
