@@ -37,22 +37,28 @@ actor I2CBusPhys is I2CBus
     _filename = filename'
 
   be open(callback:I2CCallback[None]) =>
-    if _fd == -1 then
-      var flags: I32 = @ponyint_o_rdwr[I32]()
-      _fd = @open[I32](_filename.cstring(), flags)
-      if _fd < 0 then
-        I2COpenError
+    ifdef "i2c" then
+      if _fd == -1 then
+        var flags: I32 = @ponyint_o_rdwr[I32]()
+        _fd = @open[I32](_filename.cstring(), flags)
+        if _fd < 0 then
+          I2COpenError
+        else
+          _last_address = 255
+          callback(None, I2COk)
+        end
       else
-        _last_address = 255
-        callback(None, I2COk)
+        callback(None, I2COpenError)
       end
     else
       callback(None, I2COpenError)
     end
 
   be close() =>
-    if _fd != -1 then
-      @close[I32](_fd)
+    ifdef "i2c" then
+      if _fd != -1 then
+        @close[I32](_fd)
+      end
     end
 
   be read_byte(device:U8, callback:I2CCallback[U8] ) =>
@@ -82,24 +88,28 @@ actor I2CBusPhys is I2CBus
     end
 
   fun ref _read_bytes(device:U8, expected:USize) : (Array[U8] val|I2CResult) =>
-    if _fd == -1 then
-      I2CNotOpenError
-    end
-    _select(device)
-    let buffer: Array[U8] = [device]
-    let write_result = @write[ISize]( _fd, buffer.cpointer(), I32(1) )
-    if( write_result != 1 ) then
-      return I2CWriteError
-    end
-    recover val
-      let read_result:Array[U8] = Array[U8](expected)
-      let bytes_read = @read[I32](_fd, read_result.cpointer(), expected)
-      if bytes_read != expected.i32() then
-        return I2CReadError
+    ifdef "i2c" then
+      if _fd == -1 then
+        I2CNotOpenError
       end
-      let result = Array[U8](expected)
-      result.copy_from(read_result,0,0,expected)
-      result
+      _select(device)
+      let buffer: Array[U8] = [device]
+      let write_result = @write[ISize]( _fd, buffer.cpointer(), I32(1) )
+      if( write_result != 1 ) then
+        return I2CWriteError
+      end
+      recover val
+        let read_result:Array[U8] = Array[U8](expected)
+        let bytes_read = @read[I32](_fd, read_result.cpointer(), expected)
+        if bytes_read != expected.i32() then
+          return I2CReadError
+        end
+        let result = Array[U8](expected)
+        result.copy_from(read_result,0,0,expected)
+        result
+      end
+    else
+      I2CNotOpenError
     end
     
   be write_byte(device:U8, data:U8, callback:I2CCallback[None]) =>
@@ -111,30 +121,38 @@ actor I2CBusPhys is I2CBus
     callback(result._1, result._2)
 
   fun ref _write_bytes(device:U8, data:Array[U8] val, offset:USize, size:USize) : (I32,I2CResult) =>
-    if _fd == -1 then
-      return (0, I2CNotOpenError)
+    ifdef "i2c" then
+      if _fd == -1 then
+        return (0, I2CNotOpenError)
+      end
+      _select(device)
+      let buffer = Array[U8](size + 1)
+      buffer.push(device)
+      buffer.copy_from(data,offset,1,size)
+      let bytes_written = @write[ISize]( _fd, buffer.cpointer(), buffer.size() )
+      if bytes_written != buffer.size().isize() then
+        (bytes_written.i32(), I2CWriteError )
+      end
+      (bytes_written.i32(), I2COk )
+    else
+      (0, I2CNotOpenError)
     end
-    _select(device)
-    let buffer = Array[U8](size + 1)
-    buffer.push(device)
-    buffer.copy_from(data,offset,1,size)
-    let bytes_written = @write[ISize]( _fd, buffer.cpointer(), buffer.size() )
-    if bytes_written != buffer.size().isize() then
-      (bytes_written.i32(), I2CWriteError )
-    end
-    (bytes_written.i32(), I2COk )
 
   be write_read_bytes(device:U8,writeBuffer:Array[U8] val,writeOffset:USize,writeSize:USize,expected:USize,callback:(I2CCallback[Array[U8] val]) ) => None
 
   be ioctl(command:I64, value:I32) => None
-    if _fd != -1 then
-      @ioctl[I32](_fd, command, value)
+    ifdef "i2c" then
+      if _fd != -1 then
+        @ioctl[I32](_fd, command, value)
+      end
     end
 
   fun ref _select(device:U8) =>
-    if _last_address != device then
-      _last_address = device
-      @ioctl[I32](_fd,I2CSLAVE(),device and 0x7f)
+    ifdef "i2c" then
+      if _last_address != device then
+        _last_address = device
+        @ioctl[I32](_fd,I2CSLAVE(),device and 0x7f)
+      end
     end
 
 actor I2CBusEmulator is I2CBus

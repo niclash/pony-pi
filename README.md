@@ -43,13 +43,22 @@ ln -s /home/niclas/dev/pony/ponyc-arm/build/release/ponyc /home/niclas/bin
 ```
 
 ## How to compile your program
-Then to compile, you need to set up the `$CC` environment variable, and 
+Then to compile, you need to set up the `$CC` environment variable, and
 provide the right target information to the compiler.
+
+### x64
+```bash
+export CC="/usr/bin/x86_64-linux-gnu-gcc"
+cd <<YOURPROJECT>>
+corral run -- ponyc -Dopenssl_1.1.x
+```
+
+### Raspberry Pi
 
 ```bash
 export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwiringPi"
 cd <<YOURPROJECT>>
-corral run -- ponyc -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
+corral run -- ponyc -Dwiringpi -Di2c -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```
 
 ## Different Compiler
