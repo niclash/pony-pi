@@ -1,5 +1,5 @@
 # pony-pi
-Raspberry Pi I/O support library
+Raspberry Pi I/O support library - Only Raspberry Pi3 is tested. Earlier Pi versions don't have ARMv8-a, so needs to be different. RPi4 probably works, but not tested.
 
 Pony Language doesn't support Raspberry Pi from the community directly,
 but it is possible to compile Pony Language compiler to cross-compile to
@@ -57,7 +57,17 @@ corral run -- ponyc -Dopenssl_1.1.x
 
 ```bash
 export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwiringPi"
+```
+
+**NOTE: Your project needs to depend on this repository.**
+```bash
 cd <<YOURPROJECT>>
+corral add github.com/niclash/pony-pi.git
+```
+
+Then you can compile normally, such as;
+
+```bash
 corral run -- ponyc -Dwiringpi -Di2c -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```
 
