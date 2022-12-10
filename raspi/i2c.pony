@@ -1,5 +1,12 @@
 use "files"
 
+use @ponyint_o_rdwr[I32]()
+use @open[I32](_filename:Pointer[U8 val] tag, flags:I32)
+use @write[ISize](_fd:I32, buffer:Pointer[U8 val] tag, size:I32)
+use @read[I32](_fd:I32, read_result:Pointer[U8 val] tag, expected:I32)
+use @ioctl[I32](_fd:I32, command:U16, value:U8)
+use @close[I32](_fd:I32)
+
 primitive I2COk
 primitive I2COpenError
 primitive I2CNotOpenError
@@ -24,7 +31,7 @@ trait tag I2CBus
 
   be write_read_bytes(device:U8,writeBuffer:Array[U8] val,writeOffset:USize,writeSize:USize,expected:USize,callback:(I2CCallback[Array[U8] val]) )
 
-  be ioctl(command:I64, value:I32)
+  be ioctl(command:U16, value:U8)
 
 
 actor I2CBusPhys is I2CBus
@@ -100,7 +107,7 @@ actor I2CBusPhys is I2CBus
       end
       recover val
         let read_result:Array[U8] = Array[U8](expected)
-        let bytes_read = @read[I32](_fd, read_result.cpointer(), expected)
+        let bytes_read = @read[I32](_fd, read_result.cpointer(), expected.i32())
         if bytes_read != expected.i32() then
           return I2CReadError
         end
@@ -111,7 +118,7 @@ actor I2CBusPhys is I2CBus
     else
       I2CNotOpenError
     end
-    
+
   be write_byte(device:U8, data:U8, callback:I2CCallback[None]) =>
     let result = _write_bytes( device, [data], 0, 1 )
     callback(None, result._2)
@@ -129,7 +136,7 @@ actor I2CBusPhys is I2CBus
       let buffer = Array[U8](size + 1)
       buffer.push(device)
       buffer.copy_from(data,offset,1,size)
-      let bytes_written = @write[ISize]( _fd, buffer.cpointer(), buffer.size() )
+      let bytes_written = @write[ISize]( _fd, buffer.cpointer(), buffer.size().i32() )
       if bytes_written != buffer.size().isize() then
         (bytes_written.i32(), I2CWriteError )
       end
@@ -140,7 +147,7 @@ actor I2CBusPhys is I2CBus
 
   be write_read_bytes(device:U8,writeBuffer:Array[U8] val,writeOffset:USize,writeSize:USize,expected:USize,callback:(I2CCallback[Array[U8] val]) ) => None
 
-  be ioctl(command:I64, value:I32) => None
+  be ioctl(command:U16, value:U8) => None
     ifdef "i2c" then
       if _fd != -1 then
         @ioctl[I32](_fd, command, value)
@@ -163,16 +170,16 @@ actor I2CBusEmulator is I2CBus
   be write_byte(device:U8,data:U8, callback:I2CCallback[None]) => None
   be write_bytes(device:U8,buffer:Array[U8] val, offset:USize, size:USize, callback:I2CCallback[I32]) => None
   be write_read_bytes(device:U8,writeBuffer:Array[U8] val,writeOffset:USize,writeSize:USize,expected:USize,callback:(I2CCallback[Array[U8] val]) ) => None
-  be ioctl(command:I64, value:I32) => None
+  be ioctl(command:U16, value:U8) => None
 
 primitive I2C
-  fun bus( bus_number:U8, auth:AmbientAuth ):I2CBus =>
+  fun bus( bus_number:U8, auth:FileAuth ):I2CBus =>
     try
-      let sysfs = FilePath(auth, "/sys/bus/i2c/devices/i2c-" + bus_number.string())?
+      let sysfs = FilePath(auth, "/sys/bus/i2c/devices/i2c-" + bus_number.string())
       let i2cbus:I2CBus = ifdef "wiringpi" then
         if sysfs.exists() then
-          let filename = "/dev/i2c-" + bus_number.string()
-          let devfs = FilePath(auth, filename)?
+          let filename:String val = "/dev/i2c-" + bus_number.string()
+          let devfs = FilePath(auth, filename)
           if not devfs.exists() then
             error
           end
@@ -232,7 +239,7 @@ class val I2CDevice
   """
     _bus.read_bytes(_address, expected, callback)
 
-  fun val ioctl(command:I64, value:I32) =>
+  fun val ioctl(command:U16, value:U8) =>
   """
   Runs an ioctl on this device.
   """
