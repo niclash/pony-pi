@@ -1,4 +1,16 @@
 
+use @pinMode[None](pin:I32, mode:I32)
+use @pullUpDnControl[None](pin:I32,mode:I32)
+use @digitalWrite[None](pin:I32, value:I32)
+use @pwmWrite[None](pin:I32,value:I32)
+use @digitalRead[I32](pin:I32)
+use @analogRead[I32](pin:I32)
+use @analogWrite[None](pin:I32, value:I32 )
+use @wiringPiISR[I32](pin:I32, edge_type:I32, callback:PiIsrCallback)
+use @wiringPiSetup[I32]()
+use @wiringPiSetupSys[I32]()
+use @wiringPiSetupGpio[I32]()
+use @wiringPiSetupPhys[I32]()
 
 primitive LOW fun apply():I32 => 0
 primitive HIGH fun apply():I32 => 1
