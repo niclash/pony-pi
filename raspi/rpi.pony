@@ -1,4 +1,6 @@
 
+use "lib:wiringPi" if linux
+
 use @pinMode[None](pin:I32, mode:I32)
 use @pullUpDnControl[None](pin:I32,mode:I32)
 use @digitalWrite[None](pin:I32, value:I32)
