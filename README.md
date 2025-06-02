@@ -101,17 +101,14 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
 Then run the following 
 
 ```bash 
-# Build the (partial) LLVM toolchain (might as well do RISC-V while we are at it
-make libs build_flags=-j8 llvm_archs="X86;ARM;RISCV"
+export LLVM_DIR=`pwd`/build/build_libs/llvm/src/llvm
+make libs build_flags=-j4 llvm_archs="X86;ARM;RISCV"
 
-# Configure Ponyc compilation
+# This line passes the toolchain file to CMake during configuration
 make configure CMAKE_ARGS="-DCMAKE_TOOLCHAIN_FILE=toolchains/armhf-toolchain.cmake"
 
-# Build the ponyc binary
-make build build_flags=-j8
-
-# Build the pony runtime library
-make cross-libponyrt CC=arm-linux-gnueabihf-gcc-10 CXX=arm-linux-gnueabihf-g++-10 arch=armv8-a tune=cortex-a53 llc_arch=arm
+make build build_flags=-j4
+make cross-libponyrt CC=arm-linux-gnueabihf-gcc-14 CXX=arm-linux-gnueabihf-g++-14 arch=armv8-a tune=cortex-a53 llc_arch=arm
 ```
 
 ## Put Pony compiler on PATH
